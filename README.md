@@ -2,6 +2,8 @@
 
 Python으로 만든 **데스크톱 저금통 앱**입니다. 밝은 배경, 둥근 카드, 파란 강조색과 여백으로 Apple·토스에서 영감을 받은 화면을 구성했습니다. Apple 또는 토스의 공식 앱이나 제휴 서비스는 아닙니다.
 
+Windows에서는 [릴리즈 페이지](https://github.com/Ragim-Games/moa/releases/latest)의 `Moa-v1.0.0-windows-x64.exe`를 내려받아 실행하면 됩니다. Python 설치나 별도 실행 인수가 필요하지 않습니다. 데이터는 `%LOCALAPPDATA%\Moa\moa.sqlite3`에 저장합니다.
+
 ## 빠른 실행
 
 Python 3.10 이상이 필요합니다. Windows의 python.org 기본 설치에는 GUI용 Tkinter가 포함됩니다. Windows에서 개발·검증했으며 macOS/Linux에서는 별도 실행 검증을 하지 않았습니다. Linux에서는 배포판의 `python3-tk` 및 한글 폰트가 필요할 수 있습니다.
@@ -45,23 +47,23 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m PyInstaller --clean --onedir --windowed --contents-directory . --name Moa app.py
 ```
 
-빌드가 끝나면 **`dist\Moa\Moa.exe`**를 실행하세요. `--windowed`는 콘솔 창을 숨기고, `--contents-directory .`는 실행 파일과 지원 파일을 같은 폴더에 배치합니다. 이 배치에서는 현재 소스의 기본 DB 경로가 `dist\Moa\data\moa.sqlite3`가 됩니다. [PyInstaller 옵션 설명](https://pyinstaller.org/en/stable/usage.html)
+빌드가 끝나면 **`dist\Moa\Moa.exe`**를 실행하세요. `--windowed`는 콘솔 창을 숨기고, `--contents-directory .`는 실행 파일과 지원 파일을 같은 폴더에 배치합니다. Windows EXE의 기본 DB 경로는 `%LOCALAPPDATA%\Moa\moa.sqlite3`입니다. [PyInstaller 옵션 설명](https://pyinstaller.org/en/stable/usage.html)
 
 - 배포할 때는 **`dist\Moa` 폴더 전체**를 압축하세요. EXE만 복사하면 실행에 필요한 파일이 빠집니다.
-- 압축을 푼 뒤 `Moa.exe`를 더블클릭하면 됩니다. 데이터 저장을 위해 사용자가 쓸 수 있는 폴더에 두세요.
+- 압축을 푼 뒤 `Moa.exe`를 더블클릭하면 됩니다. 데이터는 EXE 폴더와 분리해 사용자별로 저장합니다.
 - 이미 사용 중인 `dist\Moa`를 다시 빌드 대상으로 쓰기 전에는 DB를 백업하세요. 빌드 도구가 기존 출력 폴더를 교체할 수 있습니다.
-- 기존 Python 실행 기록을 옮기려면 앱을 모두 종료한 뒤 기존 `data\moa.sqlite3`를 EXE 옆 `data` 폴더에 복사하세요. 다른 사람에게 배포할 때는 개인 기록이 담긴 `data` 폴더를 제외하세요.
+- 기존 Python 실행 기록을 옮기려면 앱을 모두 종료한 뒤 기존 `data\moa.sqlite3`를 `%LOCALAPPDATA%\Moa\moa.sqlite3`로 복사하세요. 이미 데이터가 있다면 먼저 백업하세요. 다른 사람에게 배포할 때는 개인 기록을 포함하지 마세요.
 
-### 3. 단일 EXE 만들기 · 데이터 경로 지정 필수
+### 3. 단일 EXE 만들기 · 더블클릭 실행
 
 ```powershell
 .\.venv\Scripts\python.exe -m PyInstaller --clean --onefile --windowed --name MoaSingle app.py
 .\dist\MoaSingle.exe --data "$env:LOCALAPPDATA\Moa\moa.sqlite3"
 ```
 
-결과물은 **`dist\MoaSingle.exe`**입니다. 위 실행 명령은 DB를 `%LOCALAPPDATA%\Moa\moa.sqlite3`에 저장합니다. 필요한 폴더는 앱이 생성합니다.
+결과물은 **`dist\MoaSingle.exe`**입니다. 더블클릭만 해도 DB를 `%LOCALAPPDATA%\Moa\moa.sqlite3`에 저장합니다. 위 명령의 `--data`는 선택 사항이며 다른 데이터 파일을 사용할 때 지정할 수 있습니다. 필요한 폴더는 앱이 생성합니다.
 
-**현재 소스에서는 단일 EXE를 인수 없이 더블클릭하지 마세요.** 기본 데이터 경로가 `__file__` 기준이라서, `--onefile`에서는 임시 압축 해제 폴더에 DB가 생기고 종료 후 사라질 수 있습니다. 반드시 위처럼 `--data`로 영구 저장 경로를 지정하세요. 더블클릭으로 쓰려면 EXE 바로가기를 만든 뒤, 바로가기 속성의 **대상** 뒤에 `--data "C:\실제\저장폴더\moa.sqlite3"`를 추가하세요. [PyInstaller 실행 경로 설명](https://pyinstaller.org/en/stable/runtime-information.html)
+Windows 패키지 실행을 감지해 임시 압축 해제 폴더 대신 영구 저장 경로를 사용하도록 수정했습니다. 따라서 EXE를 업데이트하거나 이동해도 같은 Windows 계정의 기록을 이어서 사용합니다. Python 소스로 실행할 때는 기존 앱 폴더의 `data/moa.sqlite3`를 계속 사용합니다. [PyInstaller 실행 경로 설명](https://pyinstaller.org/en/stable/runtime-information.html)
 
 ### 아이콘과 오류 확인
 
@@ -74,7 +76,7 @@ EXE가 바로 종료되어 오류 내용을 볼 수 없다면 콘솔이 표시�
 .\dist\MoaDebug\MoaDebug.exe
 ```
 
-빌드 후 저금통 생성 → 금액 기록 → 앱 종료 → 재실행 순서로 데이터가 유지되는지 확인하고, 가격·환율 조회도 확인하세요. 이 절은 빌드 안내이며, 제공된 검증 결과는 Python 소스 실행 기준입니다. EXE 빌드 및 배포본 실행은 별도로 검증하지 않았습니다.
+빌드 후 저금통 생성 → 금액 기록 → 앱 종료 → 재실행 순서로 데이터가 유지되는지 확인하고, 가격·환율 조회도 확인하세요. v1.0.0은 Windows 11 x64에서 단일 EXE 빌드와 GUI 실행을 확인했습니다. 상세 검증 범위는 `VALIDATION.md`에 기록했습니다. 빌드에 사용한 패키지 버전은 `requirements-build.txt`에 있습니다.
 
 ## 사용 방법
 
@@ -127,7 +129,7 @@ CSS 선택자: .price_color
 
 ## 데이터와 백업
 
-기본 데이터 파일은 앱 폴더 안의 `data/moa.sqlite3`입니다. 폴더를 삭제하면 기록도 사라질 수 있으니 `설정 · 데이터 백업`에서 백업하세요. 일반 SQLite 파일이며 암호화되어 있지 않습니다.
+Python 소스 실행 시 기본 데이터 파일은 앱 폴더 안의 `data/moa.sqlite3`이고, Windows EXE 실행 시에는 `%LOCALAPPDATA%\Moa\moa.sqlite3`입니다. `설정 · 데이터 백업`에서 현재 경로를 확인하고 백업할 수 있습니다. 일반 SQLite 파일이며 암호화되어 있지 않습니다.
 
 다른 위치의 데이터 파일을 사용하거나 백업 파일을 바로 열려면:
 

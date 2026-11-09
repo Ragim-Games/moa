@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import queue
 import sqlite3
 import sys
@@ -537,10 +538,19 @@ def seed_demo(store):
         store.apply_result(p, {"original":Decimal(price), "currency":code, "krw":int(Decimal(price)*Decimal(rate)), "rate":Decimal(rate), "rate_date":"2026-11-06" if code != "KRW" else "", "source":"예시 가격 · 실제 시세 아님"})
 
 
+def default_data_path():
+    # PyInstaller onefile extracts __file__ to a disposable directory.
+    # Keep packaged Windows data in the user's permanent application-data folder.
+    if getattr(sys, "frozen", False) and sys.platform == "win32":
+        base = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
+        return base / "Moa" / "moa.sqlite3"
+    return Path(__file__).resolve().parent / "data" / "moa.sqlite3"
+
+
 def main():
     parser = argparse.ArgumentParser(description="모아 · 로컬 저금통 앱")
     parser.add_argument("--demo", action="store_true", help="저장되지 않는 예시 화면")
-    parser.add_argument("--data", type=Path, default=Path(__file__).resolve().parent / "data" / "moa.sqlite3")
+    parser.add_argument("--data", type=Path, default=default_data_path())
     args = parser.parse_args()
     store = Store(":memory:" if args.demo else args.data)
     if args.demo:
